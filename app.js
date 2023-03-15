@@ -1,10 +1,19 @@
 const http = require('http')
+const {readFileSync} = require('fs')
+
+// get all files
+// we can use rf-sync here because we're only requesting this when server starts
+// not everytime someone makes a request
+const homePage = readFileSync('./navbar-app/index.html')
 
 const server = http.createServer((req, res) => {
     const url = req.url
+    
     if (url === '/') {
+        // home page
+        // if we set the content-type to 'text/plain', it'll output the raw html
         res.writeHead(200, { 'content-type': 'text/html' })
-        res.write('<h1>home page</h1>')
+        res.write(homePage)
         res.end()
     } else if (url == '/about'){
         // return about
