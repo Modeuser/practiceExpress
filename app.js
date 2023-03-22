@@ -1,31 +1,23 @@
-const http = require('http')
-const {readFileSync} = require('fs')
+const express = require('express')
+const app = express()
 
-// get all files
-// we can use rf-sync here because we're only requesting this when server starts
-// not everytime someone makes a request
-const homePage = readFileSync('./navbar-app/index.html')
-
-const server = http.createServer((req, res) => {
-    const url = req.url
-    
-    if (url === '/') {
-        // home page
-        // if we set the content-type to 'text/plain', it'll output the raw html
-        res.writeHead(200, { 'content-type': 'text/html' })
-        res.write(homePage)
-        res.end()
-    } else if (url == '/about'){
-        // return about
-        res.writeHead(200, { 'content-type': 'text/html' })
-        res.write('<h1>about page</h1>')
-        res.end()
-    } else {
-        // return 404
-        res.writeHead(404, { 'content-type': 'text/html' })
-        res.write('<h1>page not found</h1>')
-        res.end()
-    }
+// home page (root)
+app.get('/',(req,res)=>{
+    res.send('Home page')
 })
 
-server.listen(5012)
+app.get('/about',(req,res)=>{
+    res.send('About page')
+})
+
+app.listen(5012,()=>{
+    console.log('server is listening on port 5012')
+})
+
+//app.get
+//app.post
+//app.put
+//app.delete
+//app.all
+//app.used (for middle ware)
+//app.listen
