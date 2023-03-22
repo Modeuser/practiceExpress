@@ -1,23 +1,21 @@
 const express = require('express')
+const path = require('path')
 const app = express()
 
-// home page (root)
-app.get('/',(req,res)=>{
-    res.send('Home page')
-})
+// setup static assets and middle ware
+app.use(express.static('./public'))
 
-app.get('/about',(req,res)=>{
-    res.send('About page')
+
+// index can be added to the static public assets folder
+// app.get('/',(req,res)=>{
+//     // "resolve" is used for aboslute path, "join" would have also worked
+//     res.sendFile(path.resolve(__dirname,'./navbar-app/index.html'))
+// })
+
+app.all('*',(req,res)=>{
+    res.status(404).send('the resource you\'re looking for does not exist')
 })
 
 app.listen(5012,()=>{
-    console.log('server is listening on port 5012')
+    console.log('server is listing on 5012')
 })
-
-//app.get
-//app.post
-//app.put
-//app.delete
-//app.all
-//app.used (for middle ware)
-//app.listen
