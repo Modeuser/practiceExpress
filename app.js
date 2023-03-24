@@ -1,21 +1,54 @@
 const express = require('express')
-const path = require('path')
 const app = express()
 
-// setup static assets and middle ware
-app.use(express.static('./public'))
+// import products from data.js
+const {products} = require('./data.js')
 
-
-// index can be added to the static public assets folder
-// app.get('/',(req,res)=>{
-//     // "resolve" is used for aboslute path, "join" would have also worked
-//     res.sendFile(path.resolve(__dirname,'./navbar-app/index.html'))
-// })
-
-app.all('*',(req,res)=>{
-    res.status(404).send('the resource you\'re looking for does not exist')
+app.get('/',(req,res)=>{
+    res.send('<h1> Home Page</h1><a href="/api/products">products</a>')
 })
 
-app.listen(5012,()=>{
-    console.log('server is listing on 5012')
+app.get('/api/products',(req,res)=>{
+    const newProducts = products.map((product)=>{
+        const {id,name,image} = product
+        return {id,name,image}
+    })
+
+    res.json(newProducts)
+})
+
+// route that specifies productID
+app.get('/api/products/:productID',(req,res)=>{
+    const {productID} = req.params
+
+    const singleProduct = products.find((product) => product.id === Number(productID))
+
+    if(!singleProduct){
+        return res.status(404).send('Product Does Not Exist')
+    }
+    return res.json(singleProduct)
+})
+
+// route that accepts query
+app.get('/api/v1/query',(req,res)=>{
+    const {search,limit} = req.query
+    let sortedProducts = [...products]
+
+    if(search){
+        sortedProducts = sortedProducts.filter((product)=>{
+            return product.name.startsWith(search)
+        })
+    }
+    if(limit){
+        sortedProducts = sortedProducts.slice(0,Number(limit))
+    }
+    if (sortedProducts.length < 1) {
+        return res.status(200).json({sucess:true,data:[]})
+    }
+    res.status(200).json(sortedProducts)
+})
+
+// server start
+app.listen(5012, ()=>{
+    console.log('server is listening on 5012')
 })
