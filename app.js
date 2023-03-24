@@ -1,8 +1,13 @@
 const express = require('express')
 const app = express()
-
-// import products from data.js
+const logger = require('./loggerMiddleware')
 const {products} = require('./data.js')
+
+// you can specific which route will use this middleware
+// by providing the path as the first argument
+app.use(logger)
+// multiple middleware can be setup by aruging with an array
+// the req,res order will be in the same order as the array
 
 app.get('/',(req,res)=>{
     res.send('<h1> Home Page</h1><a href="/api/products">products</a>')
