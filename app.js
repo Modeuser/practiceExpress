@@ -1,59 +1,80 @@
 const express = require('express')
 const app = express()
-const logger = require('./loggerMiddleware')
-const {products} = require('./data.js')
+let { people } = require('./data')
 
-// you can specific which route will use this middleware
-// by providing the path as the first argument
-app.use(logger)
-// multiple middleware can be setup by aruging with an array
-// the req,res order will be in the same order as the array
+// static assets
+app.use(express.static('./methods-public'))
+// parse form data
+app.use(express.urlencoded({ extended: false }))
+// parse json
+app.use(express.json())
 
-app.get('/',(req,res)=>{
-    res.send('<h1> Home Page</h1><a href="/api/products">products</a>')
+app.get('/api/people', (req, res) => {
+  res.status(200).json({ success: true, data: people })
 })
 
-app.get('/api/products',(req,res)=>{
-    const newProducts = products.map((product)=>{
-        const {id,name,image} = product
-        return {id,name,image}
-    })
-
-    res.json(newProducts)
+app.post('/api/people', (req, res) => {
+  const { name } = req.body
+  if (!name) {
+    return res
+      .status(400)
+      .json({ success: false, msg: 'please provide name value' })
+  }
+  res.status(201).json({ success: true, person: name })
 })
 
-// route that specifies productID
-app.get('/api/products/:productID',(req,res)=>{
-    const {productID} = req.params
-
-    const singleProduct = products.find((product) => product.id === Number(productID))
-
-    if(!singleProduct){
-        return res.status(404).send('Product Does Not Exist')
-    }
-    return res.json(singleProduct)
+app.post('/api/postman/people', (req, res) => {
+  const { name } = req.body
+  if (!name) {
+    return res
+      .status(400)
+      .json({ success: false, msg: 'please provide name value' })
+  }
+  res.status(201).json({ success: true, data: [...people, name] })
 })
 
-// route that accepts query
-app.get('/api/v1/query',(req,res)=>{
-    const {search,limit} = req.query
-    let sortedProducts = [...products]
+app.post('/login', (req, res) => {
+  const { name } = req.body
+  if (name) {
+    return res.status(200).send(`Welcome ${name}`)
+  }
 
-    if(search){
-        sortedProducts = sortedProducts.filter((product)=>{
-            return product.name.startsWith(search)
-        })
-    }
-    if(limit){
-        sortedProducts = sortedProducts.slice(0,Number(limit))
-    }
-    if (sortedProducts.length < 1) {
-        return res.status(200).json({sucess:true,data:[]})
-    }
-    res.status(200).json(sortedProducts)
+  res.status(401).send('Please Provide Credentials')
 })
 
-// server start
-app.listen(5012, ()=>{
-    console.log('server is listening on 5012')
+app.put('/api/people/:id', (req, res) => {
+  const { id } = req.params
+  const { name } = req.body
+
+  const person = people.find((person) => person.id === Number(id))
+
+  if (!person) {
+    return res
+      .status(404)
+      .json({ success: false, msg: `no person with id ${id}` })
+  }
+  const newPeople = people.map((person) => {
+    if (person.id === Number(id)) {
+      person.name = name
+    }
+    return person
+  })
+  res.status(200).json({ success: true, data: newPeople })
+})
+
+app.delete('/api/people/:id', (req, res) => {
+  const person = people.find((person) => person.id === Number(req.params.id))
+  if (!person) {
+    return res
+      .status(404)
+      .json({ success: false, msg: `no person with id ${req.params.id}` })
+  }
+  const newPeople = people.filter(
+    (person) => person.id !== Number(req.params.id)
+  )
+  return res.status(200).json({ success: true, data: newPeople })
+})
+
+app.listen(5000, () => {
+  console.log('Server is listening on port 5000....')
 })
